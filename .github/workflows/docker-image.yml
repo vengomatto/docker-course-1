@@ -66,10 +66,19 @@ jobs:
       #   with:
       #     images: ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.IMAGE_NAME }}
       
+      - name: Get Hash
+        id: hash
+        run: echo "git_hash=$(git rev-parse --short "$GITHUB_SHA")" >> $GITHUB_HASH
+
+      - name: Check Hash
+        run: echo "${{ env.hash }}"
+
       - name: Build and push Docker image
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           context: .
           push: true
-          tags: ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.IMAGE_NAME }}:$(git rev-parse --short "$GITHUB_SHA")
+          tags: |
+            ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ env.hash }}
+            
           
