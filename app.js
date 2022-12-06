@@ -13,5 +13,4 @@ app.get('/html', (req, res) => {
   console.log("sample html page rendered")
 });
 
-
 app.listen(3000);
