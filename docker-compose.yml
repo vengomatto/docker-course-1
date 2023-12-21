@@ -1,0 +1,13 @@
+version: '3'
+services:
+  course-1:
+    image: vengomatto/docker-course-1
+    restart: always
+
+  nginx:
+    image: nginx:1.18
+    volumes:
+      - ./nginx_proxy.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - "80:80"
+    restart: always
