@@ -17,4 +17,14 @@ app.get('/hostname', (req, res) => {
   console.log(`uela! I'm ${os.hostname()}`)
 });
 
+app.get('/k8snode', (req, res) => {
+  if (!process.env.NODE_NAME) {
+    res.status(500).send('Error: NODE_NAME environment variable is not set!');
+    console.error('Error: NODE_NAME environment variable is not set!')
+    return;
+  }
+  res.send(`<h2>Hi I'm ${os.hostname()} running on ${process.env.NODE_NAME}!</h2>`);
+  console.log(`uela! I'm ${os.hostname()} running on ${process.env.NODE_NAME}`)
+});
+
 app.listen(3000);
