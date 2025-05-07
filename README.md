@@ -56,7 +56,7 @@ crictl ps
 
 ### Forward local port 80 traffic to our nginx service in K8s
 ```sh
-sudo kubectl -n course-app port-forward svc/nginx-course-app 80:80
+kubectl -n course-app port-forward svc/nginx-course-app 3000:80
 ```
 
 ### Open k8snode endpoint
