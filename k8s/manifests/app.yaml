@@ -1,0 +1,113 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: course-app
+  labels:
+    name: course-app
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-course-app
+  namespace: course-app
+spec:
+  selector:
+    app: nginx-course-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-course-app-config
+  namespace: course-app
+data:
+  default.conf: |
+    server {  
+              listen 80;
+              server_name _;
+              location / {  
+                           proxy_pass http://course-app:80;  
+                           proxy_http_version 1.1;  
+                           proxy_set_header Upgrade $http_upgrade;  
+                           proxy_set_header Connection 'upgrade';  
+                           proxy_set_header Host $host;  
+                           proxy_cache_bypass $http_upgrade;  
+               }  
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-course-app
+  namespace: course-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx-course-app
+  template:
+    metadata:
+      labels:
+        app: nginx-course-app
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.28
+        volumeMounts:
+        - name: config
+          mountPath: /etc/nginx/conf.d
+      volumes:
+      - name: config
+        configMap:
+          name: nginx-course-app-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: course-app
+  namespace: course-app
+spec:
+  selector:
+    app: course-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: course-app
+  namespace: course-app
+spec:
+  replicas: 12
+  selector:
+    matchLabels:
+      app: course-app
+  template:
+    metadata:
+      labels:
+        app: course-app
+    spec:
+      containers:
+      - name: course-app
+        image: darkares96/unige-course-1:course-app-1
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: course-app
